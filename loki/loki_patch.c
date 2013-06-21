@@ -69,7 +69,7 @@ struct target targets[] = {
 	},
 	{
 		.vendor = "DoCoMo",
-		.build = "JDQ39.SC04EOMUAMDI",
+		.build = "JDQ39.SC04EOMUAMDI or JDQ39.SC04EOMUAMF1",
 		.check_sigs = 0x88e0fcd8,
 		.hdr = 0x88f0b2fc,
 	},

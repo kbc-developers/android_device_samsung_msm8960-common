@@ -6,3 +6,6 @@ bootloader=I545VRUAMDK
 # Galaxy Stellar
 bootloader=I200VRALH2
 bootloader=I200VRBMA1
+# DoCoMo
+bootloader=SC04EOMUAMDI
+bootloader=SC04EOMUAMF1
