@@ -112,8 +112,9 @@ static char * camera_fixup_getparams(int id, const char * settings)
     params.unflatten(android::String8(settings));
 
     // fix params here
+#ifdef QCOM_HARDWARE
     params.set(android::CameraParameters::KEY_SUPPORTED_ISO_MODES, iso_values[id]);
-
+#endif
 #ifdef PREVIEW_SIZE_FIXUP
     params.remove(android::CameraParameters::KEY_SUPPORTED_VIDEO_SIZES);
     params.remove(android::CameraParameters::KEY_PREFERRED_PREVIEW_SIZE_FOR_VIDEO);
@@ -161,6 +162,7 @@ char * camera_fixup_setparams(struct camera_device * device, const char * settin
 
     // fix params here
     // No need to fix-up ISO_HJR, it is the same for userspace and the camera lib
+#ifdef QCOM_HARDWARE
     if(params.get("iso")) {
         const char* isoMode = params.get(android::CameraParameters::KEY_ISO_MODE);
         if(strcmp(isoMode, "ISO100") == 0)
@@ -174,6 +176,7 @@ char * camera_fixup_setparams(struct camera_device * device, const char * settin
         else if(strcmp(isoMode, "ISO1600") == 0)
             params.set(android::CameraParameters::KEY_ISO_MODE, "1600");
     }
+#endif
 
 #ifdef PREVIEW_SIZE_FIXUP
     params.remove(android::CameraParameters::KEY_SUPPORTED_VIDEO_SIZES);
