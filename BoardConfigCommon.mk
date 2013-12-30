@@ -25,7 +25,6 @@ TARGET_BOARD_PLATFORM_GPU := qcom-adreno200
 TARGET_CPU_SMP := true
 
 # Flags for Krait CPU
-COMMON_GLOBAL_CFLAGS += -D__ARM_USE_PLD -D__ARM_CACHE_LINE_SIZE=64
 ifneq ($(VARIENT_REQUIRE_3.0_KERNEL),true)
 COMMON_GLOBAL_CFLAGS += -DNEW_ION_API
 endif
@@ -43,8 +42,6 @@ BOARD_HOSTAPD_PRIVATE_LIB := lib_driver_cmd_bcmdhd
 BOARD_WLAN_DEVICE := bcmdhd
 BOARD_HAVE_SAMSUNG_WIFI := true
 
-WIFI_DRIVER_MODULE_PATH     := "/system/lib/modules/dhd.ko"
-WIFI_DRIVER_MODULE_NAME     := "dhd"
 WIFI_DRIVER_MODULE_ARG      := "firmware_path=/system/etc/wifi/bcmdhd_sta.bin nvram_path=/system/etc/wifi/nvram_net.txt"
 WIFI_DRIVER_MODULE_AP_ARG   := "firmware_path=/system/etc/wifi/bcmdhd_apsta.bin nvram_path=/system/etc/wifi/nvram_net.txt"
 WIFI_DRIVER_FW_PATH_PARAM   := "/sys/module/dhd/parameters/firmware_path"
@@ -67,7 +64,7 @@ TARGET_USE_CUSTOM_LUN_FILE_PATH := /sys/devices/platform/msm_hsusb/gadget/lun%d/
 # Camera
 TARGET_PROVIDES_CAMERA_HAL := true
 USE_DEVICE_SPECIFIC_CAMERA := true
-COMMON_GLOBAL_CFLAGS += -DSAMSUNG_CAMERA_HARDWARE -DDISABLE_HW_ID_MATCH_CHECK
+COMMON_GLOBAL_CFLAGS += -DSAMSUNG_CAMERA_HARDWARE
 
 # Workaround to avoid issues with legacy liblights on QCOM platforms
 TARGET_PROVIDES_LIBLIGHT := true
@@ -78,14 +75,10 @@ BOARD_USES_ALSA_AUDIO := true
 BOARD_USES_FLUENCE_INCALL := true
 BOARD_USES_FLUENCE_FOR_VOIP := true
 BOARD_USES_SEPERATED_AUDIO_INPUT := true
-#TARGET_USES_QCOM_COMPRESSED_AUDIO := true
+TARGET_USES_QCOM_COMPRESSED_AUDIO := true
 
 # QCOM enhanced A/V
 TARGET_ENABLE_QC_AV_ENHANCEMENTS := true
-
-# QCOM BSP Enabled
-TARGET_USES_QCOM_BSP := true
-COMMON_GLOBAL_CFLAGS += -DQCOM_BSP
 
 # Kernel time optimization
 # temp remove - causing issues with short/long presses
