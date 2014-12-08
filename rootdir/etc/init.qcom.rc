@@ -314,6 +314,7 @@ on post-fs-data
     # Color Calibration
     chown root system /sys/class/misc/gammacontrol/tuner
     chmod 0664 /sys/class/misc/gammacontrol/tuner
+    restorecon /sys/class/misc/gammacontrol/tuner
 
     #Create the symlink to qcn wpa_supplicant folder for ar6000 wpa_supplicant
     mkdir /data/system 0775 system system
@@ -564,7 +565,7 @@ on property:bluetooth.isEnabled=true
 on property:vold.decrypt=trigger_restart_framework
     start config_bluetooth
 
-service irsc_util /system/bin/logwrapper /system/bin/irsc_util "/etc/sec_config"
+service irsc_util /system/bin/irsc_util "/etc/sec_config"
     class main
     user root
     oneshot
@@ -940,26 +941,11 @@ service kickstart /system/bin/qcks -i /firmware-mdm/image/
     oneshot
     disabled
 
-service qrngd /system/bin/qrngd -f
-    class main
-    user root
-    group root
-
-service efsrestorecon /system/bin/restorecon -R /efs
-    class late_start
-    user root
-    group root
-    disabled
-    oneshot
-
 # Start kickstart if mdm is detected
 on property:ro.baseband=mdm
     mkdir /data/qcks 0770 system system
     start kickstart
     start qmuxd
-
-on property:init.svc.bootanim=stopped
-    start efsrestorecon
 
 # boot completed
 on property:dev.bootcomplete=1
