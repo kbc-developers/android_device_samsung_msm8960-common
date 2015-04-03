@@ -30,6 +30,7 @@ import init.carrier.rc
 
 on early-init
     write /sys/block/mmcblk0/queue/scheduler noop
+    setprop sys.perf.profile 2
 
     mkdir /firmware-mdm 0771 system system
     symlink /data/tombstones /tombstones
@@ -207,23 +208,12 @@ on boot
 on fs
     mount_all fstab.qcom
 
-    # Keeping following partitions outside fstab file. As user may not have
-    # these partition flashed on the device. Failure to mount any partition in fstab file
-    # results in failure to launch late-start class.
+    # Enable zRAM
+    swapon_all /fstab.qcom
 
-    wait /dev/block/platform/msm_sdcc.1/by-name/persist
-    check_fs /dev/block/platform/msm_sdcc.1/by-name/persist ext4
-    mount ext4 /dev/block/platform/msm_sdcc.1/by-name/persist /persist nosuid nodev barrier=1
-
-    wait /dev/block/platform/msm_sdcc.1/by-name/efs
-    check_fs /dev/block/platform/msm_sdcc.1/by-name/efs ext4
-    mount ext4 /dev/block/platform/msm_sdcc.1/by-name/efs /efs nosuid nodev noatime noauto_da_alloc,journal_async_commit,errors=panic
     chown system radio /efs
     chmod 0771 /efs
     restorecon_recursive /efs
-
-    wait /dev/block/platform/msm_sdcc.1/by-name/modem
-    mount vfat /dev/block/platform/msm_sdcc.1/by-name/modem /firmware-mdm ro shortname=lower dmask=177 fmask=177
 
     chown system radio /dev/block/platform/msm_sdcc.1/by-name
     chmod 0775 /dev/block/platform/msm_sdcc.1/by-name
@@ -315,6 +305,7 @@ on post-fs-data
     # Color Calibration
     chown root system /sys/class/misc/gammacontrol/tuner
     chmod 0664 /sys/class/misc/gammacontrol/tuner
+    restorecon /sys/class/misc/gammacontrol/tuner
 
     #Create the symlink to qcn wpa_supplicant folder for ar6000 wpa_supplicant
     mkdir /data/system 0775 system system
@@ -532,20 +523,6 @@ on post-fs-data
     # volume up/down key
     chown radio system /sys/class/sec/sec_key/wakeup_keys
 
-    # Define TCP buffer sizes for various networks
-    #   ReadMin, ReadInitial, ReadMax, WriteMin, WriteInitial, WriteMax,
-    setprop net.tcp.buffersize.default 4096,87380,704512,4096,16384,110208
-    setprop net.tcp.buffersize.wifi    524288,1048576,2097152,262144,524288,1048576
-    setprop net.tcp.buffersize.lte     524288,1048576,2560000,524288,1048576,2560000
-    setprop net.tcp.buffersize.umts    4094,87380,704512,4096,16384,110208
-    setprop net.tcp.buffersize.hspa    4092,87380,704512,4096,16384,262144
-    setprop net.tcp.buffersize.hsupa   4092,87380,704512,4096,16384,262144
-    setprop net.tcp.buffersize.hsdpa   4092,87380,704512,4096,16384,110208
-    setprop net.tcp.buffersize.hspap   4092,87380,704512,4096,16384,262144
-    setprop net.tcp.buffersize.edge    4093,26280,35040,4096,16384,35040
-    setprop net.tcp.buffersize.gprs    4096,30000,30000,4096,8760,11680
-    setprop net.tcp.buffersize.evdo    4094,87380,262144,4096,16384,262144
-
     setprop vold.post_fs_data_done 1
 
 on property:init.svc.surfaceflinger=stopped
@@ -565,7 +542,7 @@ on property:bluetooth.isEnabled=true
 on property:vold.decrypt=trigger_restart_framework
     start config_bluetooth
 
-service irsc_util /system/bin/logwrapper /system/bin/irsc_util "/etc/sec_config"
+service irsc_util /system/bin/irsc_util "/etc/sec_config"
     class main
     user root
     oneshot
@@ -612,7 +589,6 @@ service btwlancoex /system/bin/sh /system/etc/init.qcom.coex.sh
 service wpa_supplicant /system/bin/wpa_supplicant \
     -iwlan0 -Dnl80211 -c/data/misc/wifi/wpa_supplicant.conf \
     -I/system/etc/wifi/wpa_supplicant_overlay.conf \
-    -O/data/misc/wifi/sockets \
     -e/data/misc/wifi/entropy.bin -g@android:wpa_wlan0
     #   we will start as root and wpa_supplicant will switch to user wifi
     #   after setting up the capabilities required for WEXT
@@ -629,7 +605,7 @@ service p2p_supplicant /system/bin/wpa_supplicant \
     -I/system/etc/wifi/wpa_supplicant_overlay.conf -N \
     -ip2p0 -Dnl80211 -c/data/misc/wifi/p2p_supplicant.conf \
     -I/system/etc/wifi/p2p_supplicant_overlay.conf \
-    -O/data/misc/wifi/sockets -puse_p2p_group_interface=1 \
+    -puse_p2p_group_interface=1 \
     -e/data/misc/wifi/entropy.bin -g@android:wpa_wlan0
 #   we will start as root and wpa_supplicant will switch to user wifi
 #   after setting up the capabilities required for WEXT
@@ -780,9 +756,19 @@ on property:sys.boot_completed=1
     chmod 664 /sys/module/msm_dcvs/cores/cpu0/slack_time_min_us
     chmod 664 /sys/module/msm_mpdecision/slack_time_max_us
     chmod 664 /sys/module/msm_mpdecision/slack_time_min_us
+    write /sys/module/cpu_boost/parameters/input_boost_ms 10
+    write /sys/module/cpu_boost/parameters/sync_threshold 1242000
+    write /sys/module/cpu_boost/parameters/input_boost_freq 1134000
+
     # Set performance profile
     setprop sys.perf.profile 1
     start thermald
+
+    # Set up KSM
+    write /sys/kernel/mm/ksm/deferred_timer 1
+    write /sys/kernel/mm/ksm/pages_to_scan 100
+    write /sys/kernel/mm/ksm/sleep_millisecs 500
+    write /sys/kernel/mm/ksm/run 1
 
 service hdmid /system/bin/hdmid
     class late_start
@@ -836,15 +822,11 @@ service secril-daemon /system/bin/sec-ril
 service sdcard /system/bin/sdcard -u 1023 -g 1023 -l /data/media /mnt/shell/emulated
     class late_start
 
-service fuse_sdcard0 /system/bin/sdcard -u 1023 -g 1023 -d /mnt/media_rw/sdcard0 /storage/sdcard0
+service fuse_sdcard1 /system/bin/sdcard -u 1023 -g 1023 -w 1023 /mnt/media_rw/sdcard1 /storage/sdcard1
     class late_start
     disabled
 
-service fuse_sdcard1 /system/bin/sdcard -u 1023 -g 1023 -d /mnt/media_rw/sdcard1 /storage/sdcard1
-    class late_start
-    disabled
-
-service fuse_usbdisk /system/bin/sdcard -u 1023 -g 1023 /mnt/media_rw/usbdisk /storage/usbdisk
+service fuse_usbdisk /system/bin/sdcard -u 1023 -g 1023 -w 1023 /mnt/media_rw/usbdisk /storage/usbdisk
     class late_start
     disabled
 
@@ -873,17 +855,23 @@ on property:service.bootanim.exit=1
 
 # Powersave
 on property:sys.perf.profile=0
-    start mpdecision
+    stop mpdecision
+    write /sys/devices/system/cpu/cpu0/online 1
+    write /sys/devices/system/cpu/cpu1/online 1
     write /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor conservative
     write /sys/devices/system/cpu/cpu1/cpufreq/scaling_governor conservative
     write /sys/class/kgsl/kgsl-3d0/pwrscale/trustzone/governor ondemand
+    start mpdecision
 
 # Balanced
 on property:sys.perf.profile=1
-    start mpdecision
+    stop mpdecision
+    write /sys/devices/system/cpu/cpu0/online 1
+    write /sys/devices/system/cpu/cpu1/online 1
     write /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor interactive
     write /sys/devices/system/cpu/cpu1/cpufreq/scaling_governor interactive
     write /sys/class/kgsl/kgsl-3d0/pwrscale/trustzone/governor ondemand
+    start mpdecision
 
 # High performance
 on property:sys.perf.profile=2
@@ -917,6 +905,7 @@ on charger
 service charger /charger
     class charger
     critical
+    seclabel u:r:healthd:s0
 
 # start camera server as daemon
 service qcamerasvr /system/bin/mm-qcamera-daemon
@@ -941,26 +930,11 @@ service kickstart /system/bin/qcks -i /firmware-mdm/image/
     oneshot
     disabled
 
-service qrngd /system/bin/qrngd -f
-    class main
-    user root
-    group root
-
-service efsrestorecon /system/bin/restorecon -R /efs
-    class late_start
-    user root
-    group root
-    disabled
-    oneshot
-
 # Start kickstart if mdm is detected
 on property:ro.baseband=mdm
     mkdir /data/qcks 0770 system system
     start kickstart
     start qmuxd
-
-on property:init.svc.bootanim=stopped
-    start efsrestorecon
 
 # boot completed
 on property:dev.bootcomplete=1

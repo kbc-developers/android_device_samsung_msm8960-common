@@ -23,7 +23,7 @@ TARGET_BOARD_PLATFORM_GPU := qcom-adreno200
 TARGET_CPU_VARIANT := krait
 
 # Kernel
-BOARD_KERNEL_CMDLINE := androidboot.hardware=qcom user_debug=31 zcache
+BOARD_KERNEL_CMDLINE := androidboot.hardware=qcom user_debug=31 zcache androidboot.bootdevice=msm_sdcc.1
 BOARD_KERNEL_BASE := 0x80200000
 BOARD_MKBOOTIMG_ARGS := --ramdisk_offset 0x01500000
 BOARD_KERNEL_PAGESIZE := 2048
@@ -32,16 +32,17 @@ TARGET_KERNEL_SOURCE := kernel/samsung/d2dcm
 # Audio
 BOARD_USES_ALSA_AUDIO := true
 BOARD_USES_LEGACY_ALSA_AUDIO := true
-TARGET_QCOM_AUDIO_VARIANT := caf
 TARGET_USES_QCOM_COMPRESSED_AUDIO := true
+QCOM_ADSP_SSR_ENABLED := false
+QCOM_ANC_HEADSET_ENABLED := false
+QCOM_FLUENCE_ENABLED := false
 
 # Bluetooth
 BOARD_HAVE_BLUETOOTH := true
 
 # Camera
-COMMON_GLOBAL_CFLAGS += -DNEEDS_VECTORIMPL_SYMBOLS
-COMMON_GLOBAL_CFLAGS += -DQCOM_BSP_CAMERA_ABI_HACK
 COMMON_GLOBAL_CFLAGS += -DSAMSUNG_CAMERA_HARDWARE
+TARGET_RELEASE_CPPFLAGS += -DNEEDS_VECTORIMPL_SYMBOLS
 TARGET_PROVIDES_CAMERA_HAL := true
 USE_DEVICE_SPECIFIC_CAMERA := true
 
@@ -55,33 +56,34 @@ BOARD_HARDWARE_CLASS += device/samsung/msm8960-common/cmhw
 
 # Display
 BOARD_EGL_CFG := device/samsung/msm8960-common/configs/egl.cfg
-COMMON_GLOBAL_CFLAGS += -DNEW_ION_API
+BOARD_USES_LEGACY_MMAP := true
+NUM_FRAMEBUFFER_SURFACE_BUFFERS := 3
 TARGET_DISPLAY_INSECURE_MM_HEAP := true
 TARGET_DISPLAY_USE_RETIRE_FENCE := true
+TARGET_NO_ADAPTIVE_PLAYBACK := true
 TARGET_NO_INITLOGO := true
-TARGET_QCOM_DISPLAY_VARIANT := caf
+
+# Use dlmalloc instead of jemalloc for mallocs
+MALLOC_IMPL := dlmalloc
+
+# Fonts
+EXTENDED_FONT_FOOTPRINT := true
+
+# Includes
+TARGET_SPECIFIC_HEADER_PATH += device/samsung/msm8960-common/include
 
 # Lights
 TARGET_PROVIDES_LIBLIGHT := true
 
-# Media
-TARGET_ENABLE_QC_AV_ENHANCEMENTS := true
-TARGET_QCOM_MEDIA_VARIANT := caf
+# Logging
+TARGET_USES_LOGD := false
 
 # Power
 TARGET_POWERHAL_VARIANT := qcom
 
 # Partitions
 TARGET_USERIMAGES_USE_EXT4 := true
-BOARD_BOOTIMAGE_PARTITION_SIZE := 0x00A00000
-BOARD_RECOVERYIMAGE_PARTITION_SIZE := 0x00A00000
-BOARD_SYSTEMIMAGE_PARTITION_SIZE := 1572864000
-BOARD_USERDATAIMAGE_PARTITION_SIZE := 28651290624
 BOARD_FLASH_BLOCK_SIZE := 131072
-
-# Qualcomm support
-COMMON_GLOBAL_CFLAGS += -DQCOM_BSP
-TARGET_USES_QCOM_BSP := true
 
 # Recovery
 BOARD_USE_CUSTOM_RECOVERY_FONT := \"roboto_15x24.h\"
@@ -90,34 +92,45 @@ BOARD_HAS_LARGE_FILESYSTEM := true
 BOARD_HAS_NO_MISC_PARTITION := true
 BOARD_HAS_NO_SELECT_BUTTON := true
 BOARD_RECOVERY_SWIPE := true
-TARGET_RECOVERY_FSTAB := device/samsung/msm8960-common/rootdir/etc/fstab.qcom
 
 # SELinux
-BOARD_SEPOLICY_DIRS += \
-    device/samsung/msm8960-common/sepolicy
+include device/qcom/sepolicy/sepolicy.mk
+BOARD_SEPOLICY_DIRS += device/samsung/msm8960-common/sepolicy
 
 BOARD_SEPOLICY_UNION += \
-    file_contexts \
-    app.te \
     bluetooth.te \
+    bootanim.te \
     device.te \
-    domain.te \
-    drmserver.te \
     file.te \
-    hci_init.te \
-    healthd.te \
-    init.te \
+    file_contexts \
+    gamma_dev.te \
+    genfs_contexts \
+    hostapd.te \
     init_shell.te \
-    keystore.te \
-    kickstart.te \
+    kernel.te \
+    keypad_dev.te \
+    macloader.te \
     mediaserver.te \
-    nfc.te \
+    mm-qcamerad.te \
+    mpdecision.te \
+    netd.te \
+    netmgrd.te \
+    orientationd.te \
+    panel_dev.te \
+    platform_app.te \
+    power_dev.te \
+    qmuxd.te \
+    radio.te \
     rild.te \
+    rmt_storage.te \
     surfaceflinger.te \
-    system.te \
+    sysinit.te \
+    system_app.te \
+    system_server.te \
+    thermal-engine.te \
     ueventd.te \
-    wpa.te \
-    wpa_socket.te
+    vold.te \
+    wpa.te
 
 # Vold
 BOARD_VOLD_EMMC_SHARES_DEV_MAJOR := true

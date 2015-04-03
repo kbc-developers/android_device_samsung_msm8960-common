@@ -27,9 +27,9 @@ PRODUCT_COPY_FILES += \
     frameworks/native/data/etc/android.hardware.bluetooth_le.xml:system/etc/permissions/android.hardware.bluetooth_le.xml \
     frameworks/native/data/etc/android.hardware.camera.flash-autofocus.xml:system/etc/permissions/android.hardware.camera.flash-autofocus.xml \
     frameworks/native/data/etc/android.hardware.camera.front.xml:system/etc/permissions/android.hardware.camera.front.xml \
+    frameworks/native/data/etc/android.hardware.ethernet.xml:system/etc/permissions/android.hardware.ethernet.xml \
     frameworks/native/data/etc/android.hardware.location.gps.xml:system/etc/permissions/android.hardware.location.gps.xml \
     frameworks/native/data/etc/android.hardware.nfc.xml:system/etc/permissions/android.hardware.nfc.xml \
-    frameworks/native/data/etc/android.hardware.nfc.hce.xml:system/etc/permissions/android.hardware.nfc.hce.xml \
     frameworks/native/data/etc/android.hardware.sensor.barometer.xml:system/etc/permissions/android.hardware.sensor.barometer.xml \
     frameworks/native/data/etc/android.hardware.sensor.light.xml:system/etc/permissions/android.hardware.sensor.light.xml \
     frameworks/native/data/etc/android.hardware.sensor.gyroscope.xml:system/etc/permissions/android.hardware.sensor.gyroscope.xml \
@@ -46,24 +46,33 @@ PRODUCT_COPY_FILES += \
     frameworks/native/data/etc/com.nxp.mifare.xml:system/etc/permissions/com.nxp.mifare.xml \
     frameworks/native/data/etc/handheld_core_hardware.xml:system/etc/permissions/handheld_core_hardware.xml
 
+# Media
+PRODUCT_COPY_FILES += \
+    frameworks/av/media/libstagefright/data/media_codecs_ffmpeg.xml:system/etc/media_codecs_ffmpeg.xml \
+    frameworks/av/media/libstagefright/data/media_codecs_google_audio.xml:system/etc/media_codecs_google_audio.xml \
+    frameworks/av/media/libstagefright/data/media_codecs_google_telephony.xml:system/etc/media_codecs_google_telephony.xml \
+    frameworks/av/media/libstagefright/data/media_codecs_google_video.xml:system/etc/media_codecs_google_video.xml
+
 # System Properties
 PRODUCT_DEFAULT_PROPERTY_OVERRIDES += \
     persist.sys.usb.config=mtp
 
 PRODUCT_PROPERTY_OVERRIDES += \
-    af.resampler.quality=255 \
-    lpa.decode=true \
     qcom.hw.aac.encoder=true \
     ro.config.vc_call_vol_steps=7
 
 PRODUCT_PROPERTY_OVERRIDES += \
     debug.composition.type=dyn \
-    ro.opengles.version=131072
+    ro.opengles.version=131072 \
+    camera2.portability.force_api=1
+
+PRODUCT_PROPERTY_OVERRIDES += \
+    persist.sys.media.use-awesome=true \
+    media.stagefright.use-awesome=true
 
 PRODUCT_PROPERTY_OVERRIDES += \
     persist.data_netmgrd_nint=16 \
     persist.radio.add_power_save=1 \
-    persist.radio.apm_sim_not_pwdn=1 \
     persist.radio.mode_pref_nv10=1 \
     persist.radio.no_wait_for_card=0
 
@@ -100,7 +109,6 @@ PRODUCT_PROPERTY_OVERRIDES += \
 # Audio
 PRODUCT_PACKAGES += \
     audio.a2dp.default \
-    audio_policy.msm8960 \
     audio.primary.msm8960 \
     audio.r_submix.default \
     audio.usb.default \
@@ -129,7 +137,8 @@ PRODUCT_PACKAGES += \
 PRODUCT_COPY_FILES += \
     $(LOCAL_PATH)/keylayout/cyttsp-i2c.kl:system/usr/keylayout/cyttsp-i2c.kl \
     $(LOCAL_PATH)/keylayout/keypad_8960.kl:system/usr/keylayout/keypad_8960.kl \
-    $(LOCAL_PATH)/keylayout/Vendor_04e8_Product_7021.kl:system/usr/keylayout/Vendor_04e8_Product_7021.kl
+    $(LOCAL_PATH)/keylayout/Vendor_04e8_Product_7021.kl:system/usr/keylayout/Vendor_04e8_Product_7021.kl \
+    $(LOCAL_PATH)/configs/excluded-input-devices.xml:system/etc/excluded-input-devices.xml
 
 # Lights
 PRODUCT_PACKAGES += \
@@ -164,15 +173,15 @@ PRODUCT_PACKAGES += \
     libOmxAmrEnc \
     libOmxEvrcEnc \
     libOmxQcelp13Enc \
-    libstagefrighthw
+    libstagefrighthw \
+    qcmediaplayer
+
+PRODUCT_BOOT_JARS += \
+    qcmediaplayer
 
 # Power
 PRODUCT_PACKAGES += \
     power.msm8960
-
-# QRNGD
-PRODUCT_PACKAGES += \
-    qrngd
 
 # Ramdisk
 PRODUCT_PACKAGES += \
@@ -187,17 +196,19 @@ PRODUCT_PACKAGES += \
 PRODUCT_COPY_FILES += \
     $(LOCAL_PATH)/configs/thermald-8960.conf:system/etc/thermald-8960.conf
 
-# Torch
-PRODUCT_PACKAGES += \
-    Torch
-
 # USB
 PRODUCT_PACKAGES += \
-    com.android.future.usb.accessory
+    com.android.future.usb.accessory \
+    persist.sys.isUsbOtgEnabled=true
 
 # Wifi
 PRODUCT_PACKAGES += \
-    macloader
+    dhcpcd.conf \
+    hostapd \
+    hostapd_default.conf \
+    libwpa_client \
+    macloader \
+    wpa_supplicant
 
 # Common Qualcomm
 $(call inherit-product, device/samsung/qcom-common/qcom-common.mk)
