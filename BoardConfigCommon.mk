@@ -129,7 +129,8 @@ BOARD_SEPOLICY_UNION += \
     thermal-engine.te \
     ueventd.te \
     vold.te \
-    wpa.te
+    wpa.te \
+    felica.te
 
 # Vold
 BOARD_VOLD_EMMC_SHARES_DEV_MAJOR := true
