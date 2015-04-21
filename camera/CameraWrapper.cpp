@@ -32,7 +32,7 @@
 #include <hardware/hardware.h>
 #include <hardware/camera.h>
 #include <camera/Camera.h>
-#include <camera/CameraParameters.h>
+#include <camera/CameraParameters2.h>
 #include <dlfcn.h>
 
 #define BACK_CAMERA_ID 0
@@ -352,7 +352,7 @@ static int camera_set_parameters(struct camera_device *device,
     __android_log_write(ANDROID_LOG_VERBOSE, LOG_TAG, settings);
 #endif
 
-    CameraParameters params;
+    CameraParameters2 params;
     params.unflatten(String8(settings));
 
     const char* camMode = params.get(CameraParameters::KEY_SAMSUNG_CAMERA_MODE);
@@ -457,7 +457,7 @@ static char *camera_get_parameters(struct camera_device *device)
 
     wrapper_camera_device_t *wrapper = (wrapper_camera_device_t *)device;
 
-    CameraParameters params;
+    CameraParameters2 params;
     params.unflatten(String8(parameters));
 
     // fix params here
@@ -473,17 +473,10 @@ static char *camera_get_parameters(struct camera_device *device)
     params.set(CameraParameters::KEY_PREFERRED_PREVIEW_SIZE_FOR_VIDEO, id ? "640x480" : "800x480");
 #endif
 
-#ifndef DISABLE_FACE_DETECTION_BOTH_CAMERAS
-    /* Disable face detection for front facing camera */
-    if(id == FRONT_CAMERA_ID) {
-#endif
-        params.set(CameraParameters::KEY_MAX_NUM_DETECTED_FACES_HW, "0");
-        params.set(CameraParameters::KEY_MAX_NUM_DETECTED_FACES_SW, "0");
-        params.set(CameraParameters::KEY_FACE_DETECTION, "off");
-        params.set(CameraParameters::KEY_SUPPORTED_FACE_DETECTION, "off");
-#ifndef DISABLE_FACE_DETECTION_BOTH_CAMERAS
-    }
-#endif
+    params.set(CameraParameters::KEY_MAX_NUM_DETECTED_FACES_HW, "0");
+    params.set(CameraParameters::KEY_MAX_NUM_DETECTED_FACES_SW, "0");
+    params.set(CameraParameters::KEY_FACE_DETECTION, "off");
+    params.set(CameraParameters::KEY_SUPPORTED_FACE_DETECTION, "off");
 
     char *ret = strdup(params.flatten().string());
     VENDOR_CALL(device, put_parameters, parameters);
