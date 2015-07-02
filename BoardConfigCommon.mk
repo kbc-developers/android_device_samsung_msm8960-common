@@ -118,7 +118,8 @@ BOARD_SEPOLICY_UNION += \
     system.te \
     ueventd.te \
     wpa.te \
-    wpa_socket.te
+    wpa_socket.te \
+    recovery.te
 
 # Vold
 BOARD_VOLD_EMMC_SHARES_DEV_MAJOR := true
