@@ -57,7 +57,6 @@ BOARD_CHARGER_SHOW_PERCENTAGE := true
 BOARD_HARDWARE_CLASS += device/samsung/msm8960-common/cmhw
 
 # Display
-BOARD_EGL_CFG := device/samsung/msm8960-common/configs/egl.cfg
 BOARD_USES_LEGACY_MMAP := true
 NUM_FRAMEBUFFER_SURFACE_BUFFERS := 3
 TARGET_DISPLAY_INSECURE_MM_HEAP := true
@@ -125,7 +124,6 @@ BOARD_SEPOLICY_UNION += \
     sysinit.te \
     system_app.te \
     system_server.te \
-    thermal-engine.te \
     ueventd.te \
     vold.te \
     wpa.te \
@@ -138,4 +136,3 @@ TARGET_USE_CUSTOM_LUN_FILE_PATH := /sys/devices/platform/msm_hsusb/gadget/lun%d/
 
 # Build our own PowerHAL
 TARGET_POWERHAL_VARIANT :=
-TARGET_POWERHAL_SET_INTERACTIVE_EXT := device/samsung/msm8960-common/power/power_ext.c
