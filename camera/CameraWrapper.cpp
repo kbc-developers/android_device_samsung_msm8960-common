@@ -369,6 +369,7 @@ static int camera_set_parameters(struct camera_device *device,
 #ifdef DERP2
     bool isVideo = false;
     bool isZsl = false;
+    int camMode = -1;
 
     if (params.get(CameraParameters::KEY_RECORDING_HINT))
         isVideo = !strcmp(params.get(CameraParameters::KEY_RECORDING_HINT), "true");
@@ -377,11 +378,9 @@ static int camera_set_parameters(struct camera_device *device,
         isZsl = !strcmp(params.get(CameraParameters::KEY_ZSL), "on");
 
     if (id == FRONT_CAMERA_ID || isZsl) {
-        int camMode;
+
         if (params.get(CameraParameters::KEY_SAMSUNG_CAMERA_MODE)) {
             camMode = params.getInt(CameraParameters::KEY_SAMSUNG_CAMERA_MODE);
-        } else {
-            camMode = -1;
         }
 
         if (camMode == -1) {
@@ -461,8 +460,13 @@ static char *camera_get_parameters(struct camera_device *device)
 
     params.set(CameraParameters::KEY_MAX_NUM_DETECTED_FACES_HW, "0");
     params.set(CameraParameters::KEY_MAX_NUM_DETECTED_FACES_SW, "0");
-    params.set(CameraParameters::KEY_FACE_DETECTION, "off");
-    params.set(CameraParameters::KEY_SUPPORTED_FACE_DETECTION, "off");
+    params.remove(android::CameraParameters::KEY_QC_FACE_RECOGNITION);
+    params.remove(android::CameraParameters::KEY_QC_SUPPORTED_FACE_RECOGNITION);
+    params.remove(android::CameraParameters::KEY_QC_SUPPORTED_FACE_RECOGNITION_MODES);
+    params.remove(android::CameraParameters::KEY_QC_FACE_DETECTION);
+    params.remove(android::CameraParameters::KEY_QC_SUPPORTED_FACE_DETECTION);
+    params.remove(android::CameraParameters::KEY_FACE_DETECTION);
+    params.remove(android::CameraParameters::KEY_SUPPORTED_FACE_DETECTION);
 
     char *ret = strdup(params.flatten().string());
     VENDOR_CALL(device, put_parameters, parameters);
